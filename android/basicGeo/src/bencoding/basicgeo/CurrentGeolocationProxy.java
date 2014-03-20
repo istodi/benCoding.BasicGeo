@@ -29,8 +29,7 @@ import android.os.Bundle;
 @Kroll.proxy(creatableInModule  = BasicgeoModule.class)
 public class CurrentGeolocationProxy extends KrollProxy {
 	private Locale _currentLocale = Locale.getDefault();
-	
-	public CurrentGeolocationProxy() {
+    	public CurrentGeolocationProxy() {
 		super();
 	}
 
@@ -43,28 +42,28 @@ public class CurrentGeolocationProxy extends KrollProxy {
 	public void setPurpose(String Value){
 		CommonHelpers.DebugLog("Purpose is used for cross-platform compatibility, android does not use this feature");
 	}
-    
+
 	@Kroll.method @Kroll.setProperty
-	public void setGeoLocale(String language){	
+	public void setGeoLocale(String language){
 		_currentLocale= new Locale(language);
 		CommonHelpers.DebugLog("Locale is now " + _currentLocale.toString());
 	}
 
 	@Kroll.method
-	public boolean reverseGeoIsSupported(){		
+	public boolean reverseGeoIsSupported(){
 		return CommonHelpers.reverseGeoSupported();
 	}
-	
+
 	private HashMap<String, Object> FindAddress(double latitude, double longitude,String providerName){
-	      Geocoder geocoder = new Geocoder(TiApplication.getInstance().getApplicationContext(), _currentLocale);   
-	      
-	      try {            
-	    	  List<Address> list = geocoder.getFromLocation(latitude,longitude,1);            
-	    	  int placeCount = list.size();            
-	    	  Object[] addressResult = new Object[placeCount];            
-	    	  if (list != null && placeCount > 0) {            	  	          
-	    		  for (int iLoop = 0; iLoop < placeCount; iLoop++) {	          		
-	    			  addressResult[iLoop]= CommonHelpers.buildAddress(latitude,longitude,list.get(iLoop));	          		
+	      Geocoder geocoder = new Geocoder(TiApplication.getInstance().getApplicationContext(), _currentLocale);
+
+	      try {
+	    	  List<Address> list = geocoder.getFromLocation(latitude,longitude,1);
+	    	  int placeCount = list.size();
+	    	  Object[] addressResult = new Object[placeCount];
+	    	  if (list != null && placeCount > 0) {
+	    		  for (int iLoop = 0; iLoop < placeCount; iLoop++) {
+	    			  addressResult[iLoop]= CommonHelpers.buildAddress(latitude,longitude,list.get(iLoop));
 	    		  }
 	    	  }
 
@@ -72,26 +71,26 @@ public class CurrentGeolocationProxy extends KrollProxy {
             HashMap<String, Object> eventOk = new HashMap<String, Object>();
 	      	eventOk.put("placeCount",placeCount);
 	      	eventOk.put("places",addressResult);
-	      	eventOk.put(TiC.PROPERTY_SUCCESS, true);	
+	      	eventOk.put(TiC.PROPERTY_SUCCESS, true);
 	      	eventOk.put("locationProvider", providerName);
 	      	return eventOk;
-	      		
+
         } catch (IOException e) {
-        	Log.e(BasicgeoModule.MODULE_FULL_NAME, "[FIND ADDRESS] Error:",e);  				
+        	Log.e(BasicgeoModule.MODULE_FULL_NAME, "[FIND ADDRESS] Error:",e);
   			HashMap<String, Object> eventErr = new HashMap<String, Object>();
   			eventErr.put("placeCount",0);
   			eventErr.put(TiC.PROPERTY_SUCCESS, false);
   			return eventErr;
         } finally {
       	  geocoder=null;
-        } 		
+        }
 	}
-	
+
 	public Location getLastBestLocation(LocationManager locationManager,int minDistance, long minTime) {
 	    Location bestResult = null;
 	    float bestAccuracy = Float.MAX_VALUE;
 	    long bestTime = Long.MIN_VALUE;
-	    
+
 	    // Iterate through all the providers on the system, keeping
 	    // note of the most accurate result within the acceptable time limit.
 	    // If no result is found within maxTime, return the newest Location.
@@ -101,7 +100,7 @@ public class CurrentGeolocationProxy extends KrollProxy {
 	      if (location != null) {
 	        float accuracy = location.getAccuracy();
 	        long time = location.getTime();
-	        
+
 	        if ((time > minTime && accuracy < bestAccuracy)) {
 	          bestResult = location;
 	          bestAccuracy = accuracy;
@@ -113,38 +112,38 @@ public class CurrentGeolocationProxy extends KrollProxy {
 	        }
 	      }
 	    }
-	    
+
 	    return bestResult;
 	  }
-	
+
 	@Kroll.method
-	public void getCurrentPlace(CriteriaProxy criteriaproxy,KrollFunction inputcallback){	
+	public void getCurrentPlace(CriteriaProxy criteriaproxy,KrollFunction inputcallback){
 		final KrollFunction callback = inputcallback;
 		Location cacheLocation = null;
 			if(!CommonHelpers.reverseGeoSupported()){
-		  		  if (callback != null) {      				
+		  		  if (callback != null) {
 		    			HashMap<String, Object> eventErr = new HashMap<String, Object>();
 		    			eventErr.put("placeCount",0);
 		    			eventErr.put(TiC.PROPERTY_SUCCESS, false);
-		    			eventErr.put("message","Reverse Geo Location is not supported, see console for details");	
+		    			eventErr.put("message","Reverse Geo Location is not supported, see console for details");
 		    			callback.call(getKrollObject(), eventErr);
-				  }         	
+				  }
 		  		  return;
 			}
-		
+
 	      if (!CommonHelpers.hasProviders()) {
-		  		  if (callback != null) {      				
+		  		  if (callback != null) {
 		    			HashMap<String, Object> eventErr = new HashMap<String, Object>();
 		    			eventErr.put("placeCount",0);
 		    			eventErr.put(TiC.PROPERTY_SUCCESS, false);
-		    			eventErr.put("message","No Location Providers available");	
+		    			eventErr.put("message","No Location Providers available");
 		    			callback.call(getKrollObject(), eventErr);
-				  }         	
+				  }
 	      	return;
 	      }
-      
+
 	    LocationManager locManager = (LocationManager) TiApplication.getInstance().getApplicationContext().getSystemService(TiApplication.LOCATION_SERVICE);
-				      
+
 	    if(criteriaproxy.getUseCache()){
 	    	cacheLocation = getLastBestLocation(locManager,criteriaproxy.getCacheDistance(), criteriaproxy.getCacheTime());
 	    }
@@ -152,49 +151,49 @@ public class CurrentGeolocationProxy extends KrollProxy {
 	    	callback.call(getKrollObject(), FindAddress(cacheLocation.getLatitude(),cacheLocation.getLongitude(),"lastFound"));
       		return;
 	    }
-	    
-	    Criteria criteria = criteriaproxy.getCriteria();  	  
+
+	    Criteria criteria = criteriaproxy.getCriteria();
 		String provider = locManager.getBestProvider(criteria, true);
-		
+
 		if(providerEmpty(provider)){
-	  		if (callback != null) {      				
+	  		if (callback != null) {
 	  			HashMap<String, Object> eventErr = new HashMap<String, Object>();
 				eventErr.put("placeCount",0);
 				eventErr.put(TiC.PROPERTY_SUCCESS, false);
-				eventErr.put("message","No Location Providers available");	
+				eventErr.put("message","No Location Providers available");
 				callback.call(getKrollObject(), eventErr);
-	  		} 
+	  		}
 	  		return;
 		}
 		locManager.requestSingleUpdate(criteria, new LocationListener(){
-	
+
 	  	        @Override
 	  	        public void onLocationChanged(Location location) {
-	  	            	          	        	
+
 	  				CommonHelpers.DebugLog("[ADDRESS SEARCH] onLocationChanged");
-	  				
+
 	  		        if(location==null){
-		  			  		  if (callback != null) {      				
+		  			  		  if (callback != null) {
 		  			    			HashMap<String, Object> eventErr = new HashMap<String, Object>();
 		  			    			eventErr.put("placeCount",0);
 		  			    			eventErr.put(TiC.PROPERTY_SUCCESS, false);
-		  			    			eventErr.put("message","No Location Provided");	
+		  			    			eventErr.put("message","No Location Provided");
 		  			    			callback.call(getKrollObject(), eventErr);
-		  					  }       	
+		  					  }
 		  		        }else{
-		  		        	callback.call(getKrollObject(), FindAddress(location.getLatitude(),location.getLongitude(),location.getProvider()));	        	
-		  		        }  
-	
+		  		        	callback.call(getKrollObject(), FindAddress(location.getLatitude(),location.getLongitude(),location.getProvider()));
+		  		        }
+
 	  	        }
-	
+
 	  	        @Override
 	  	        public void onProviderDisabled(String provider) {}
 	  	        @Override
 	  	        public void onProviderEnabled(String provider) {}
 	  	        @Override
 	  	        public void onStatusChanged(String provider, int status, Bundle extras) {}
-	
-	  	    }, null);  	
+
+	  	    }, null);
 	}
 	private boolean providerEmpty(String value){
 		if(value == null){
@@ -206,67 +205,67 @@ public class CurrentGeolocationProxy extends KrollProxy {
 		return false;
 	}
 	@Kroll.method
-	public void getCurrentPosition(CriteriaProxy criteriaproxy,KrollFunction inputcallback){	
+	public void getCurrentPosition(CriteriaProxy criteriaproxy,KrollFunction inputcallback){
 		final KrollFunction callback = inputcallback;
 		Location cacheLocation = null;
-		
+
         if (!CommonHelpers.hasProviders()) {
-	  		  if (callback != null) {      				
+	  		  if (callback != null) {
 	    			HashMap<String, Object> eventErr = new HashMap<String, Object>();
 	    			eventErr.put("placeCount",0);
 	    			eventErr.put(TiC.PROPERTY_SUCCESS, false);
-	    			eventErr.put("message","No Location Providers available");	
+	    			eventErr.put("message","No Location Providers available");
 	    			callback.call(getKrollObject(), eventErr);
-			  }         	
+			  }
         	return;
         }
 
 		LocationManager locManager = (LocationManager) TiApplication.getInstance().getApplicationContext().getSystemService(TiApplication.LOCATION_SERVICE);
-				
+
 	    if(criteriaproxy.getUseCache()){
 	    	cacheLocation = getLastBestLocation(locManager,
-	    										criteriaproxy.getCacheDistance(), 
+	    										criteriaproxy.getCacheDistance(),
 	    										criteriaproxy.getCacheTime());
 	    }
 	    if(cacheLocation!=null){
 	    	callback.call(getKrollObject(), buildLocationEvent(cacheLocation, "lastFound"));
         	return;
 	    }
-	        	
-    	Criteria criteria = criteriaproxy.getCriteria();  
+
+    	Criteria criteria = criteriaproxy.getCriteria();
     	String provider = locManager.getBestProvider(criteria, true);
-		
+
 		if(providerEmpty(provider)){
-	  		if (callback != null) {      				
+	  		if (callback != null) {
 	  			HashMap<String, Object> eventErr = new HashMap<String, Object>();
   				eventErr.put("placeCount",0);
   				eventErr.put(TiC.PROPERTY_SUCCESS, false);
-  				eventErr.put("message","No Location Providers available");	
+  				eventErr.put("message","No Location Providers available");
   				callback.call(getKrollObject(), eventErr);
-	  		} 
+	  		}
 	  		return;
 		}
-		
+
 		locManager.requestSingleUpdate(criteria, new LocationListener(){
 
     	        @Override
     	        public void onLocationChanged(Location location) {
-    	            	          	        	
+
     				CommonHelpers.DebugLog("[COORD SEARCH] onLocationChanged");
-    				
-    		        if(location==null){    		        	
+
+    		        if(location==null){
     		        	CommonHelpers.DebugLog("[COORD SEARCH] No coordinates found");
-    			  		  if (callback != null) {      				
+    			  		  if (callback != null) {
     			    			HashMap<String, Object> eventErr = new HashMap<String, Object>();
     			    			eventErr.put("placeCount",0);
     			    			eventErr.put(TiC.PROPERTY_SUCCESS, false);
-    			    			eventErr.put("message","No Location Provided");	
+    			    			eventErr.put("message","No Location Provided");
     			    			callback.call(getKrollObject(), eventErr);
-    					  }       	
+    					  }
     		        }else{
-    		        	CommonHelpers.DebugLog("[COORD SEARCH] returning callback location provider " + location.getProvider());
-    		        	callback.call(getKrollObject(), buildLocationEvent(location, location.getProvider()));		        	
-    		        } 
+            		        	CommonHelpers.DebugLog("[COORD SEARCH] returning callback location provider " + location.getProvider());
+    		        	callback.call(getKrollObject(), buildLocationEvent(location, location.getProvider()));
+    		        }
 
     	        }
 
@@ -279,7 +278,83 @@ public class CurrentGeolocationProxy extends KrollProxy {
 
     	    }, null);
 	}
-	
+
+    @Kroll.method
+    public void getCurrePositions(CriteriaProxy criteriaproxy,KrollFunction inputcallback){
+        final KrollFunction callback = inputcallback;
+        Location cacheLocation = null;
+
+        if (!CommonHelpers.hasProviders()) {
+                if (callback != null) {
+                    HashMap<String, Object> eventErr = new HashMap<String, Object>();
+                    eventErr.put("placeCount",0);
+                    eventErr.put(TiC.PROPERTY_SUCCESS, false);
+                    eventErr.put("message","No Location Providers available");
+                    callback.call(getKrollObject(), eventErr);
+              }
+            return;
+        }
+
+        final LocationManager locManager = (LocationManager) TiApplication.getInstance().getApplicationContext().getSystemService(TiApplication.LOCATION_SERVICE);
+
+        if(criteriaproxy.getUseCache()){
+            cacheLocation = getLastBestLocation(locManager,
+                                                criteriaproxy.getCacheDistance(),
+                                                criteriaproxy.getCacheTime());
+        }
+        if(cacheLocation!=null){
+            callback.call(getKrollObject(), buildLocationEvent(cacheLocation, "lastFound"));
+            return;
+        }
+
+        Criteria criteria = criteriaproxy.getCriteria();
+        String provider = locManager.getBestProvider(criteria, true);
+
+        if(providerEmpty(provider)){
+              if (callback != null) {
+                  HashMap<String, Object> eventErr = new HashMap<String, Object>();
+                  eventErr.put("placeCount",0);
+                  eventErr.put(TiC.PROPERTY_SUCCESS, false);
+                  eventErr.put("message","No Location Providers available");
+                  callback.call(getKrollObject(), eventErr);
+              }
+              return;
+        }
+
+        LocationListener locationListener = new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                this.stop();
+                CommonHelpers.DebugLog("[COORD SEARCH] onLocationChanged");
+
+                if(location==null){
+                    CommonHelpers.DebugLog("[COORD SEARCH] No coordinates found");
+                        if (callback != null) {
+                            HashMap<String, Object> eventErr = new HashMap<String, Object>();
+                            eventErr.put("placeCount",0);
+                            eventErr.put(TiC.PROPERTY_SUCCESS, false);
+                            eventErr.put("message","No Location Provided");
+                            callback.call(getKrollObject(), eventErr);
+                      }
+                }else{
+                    CommonHelpers.DebugLog("[COORD SEARCH] returning callback location provider " + location.getProvider());
+                    callback.call(getKrollObject(), buildLocationEvent(location, location.getProvider()));
+                }
+
+            };
+            public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+            public void onProviderEnabled(String provider) {}
+
+            public void onProviderDisabled(String provider) {}
+
+            public void stop() {
+                locManager.removeUpdates(this);
+            }
+        };
+        locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+    }
+
 	private HashMap<String, Object> buildLocationEvent(Location location,String providerName)
 	{
 		HashMap<String, Object> coordinates = new HashMap<String, Object>();
